@@ -224,3 +224,50 @@ WHERE prod_price >= 4
 GROUP BY vend_id
 HAVING COUNT(*) >= 2
 ORDER BY num_prods;
+
+#视图
+SELECT cust_name, cust_contact
+FROM customers, orders, orderitems
+WHERE customers.cust_id = orders.cust_id
+	AND orders.order_num = orderitems.order_num
+    AND prod_id = 'RGAN01';
+    
+CREATE VIEW productcustomers AS
+SELECT cust_name, cust_contact, prod_id
+FROM customers, orders, orderitems
+WHERE customers.cust_id = orders.cust_id
+AND orderitems.order_num = orders.order_num;
+
+SELECT *
+FROM productcustomers;
+
+SELECT cust_name, cust_contact
+FROM productcustomers
+WHERE prod_id = 'RGAN01';
+
+CREATE VIEW vendorlocation AS
+SELECT CONCAT(vend_name, '(', vend_country, ')') AS vend_title
+FROM vendors;
+
+SELECT *
+FROM vendorlocation;
+
+CREATE VIEW customeremaillist AS
+SELECT cust_id, cust_name, cust_email
+FROM customers
+WHERE cust_email IS NOT NULL;
+
+SELECT *
+FROM customeremaillist;
+
+CREATE VIEW orderitemsexpanded AS
+SELECT order_num,
+       prod_id,
+       quantity, 
+       item_price,
+       quantity*item_price AS expanded_price
+FROM orderitems;
+
+SELECT *
+FROM orderitemsexpanded
+WHERE order_num = 20008;
