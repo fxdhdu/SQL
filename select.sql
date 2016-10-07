@@ -271,3 +271,127 @@ FROM orderitems;
 SELECT *
 FROM orderitemsexpanded
 WHERE order_num = 20008;
+
+SELECT order_num
+FROM orderitems
+WHERE prod_id = 'RGAN01';
+
+SELECT cust_id
+FROM orders
+WHERE order_num IN (20007,20008);
+
+SELECT cust_id
+FROM orders
+WHERE order_num IN (SELECT order_num
+					FROM orderitems
+					WHERE prod_id = 'RGAN01');
+                    
+SELECT cust_name, cust_contact
+FROM customers
+WHERE cust_id IN ('1000000004','1000000005'); #硬编码顾客ID
+
+SELECT cust_name, cust_contact
+FROM customers
+WHERE cust_id IN (SELECT cust_id
+				  FROM orders
+                  WHERE order_num IN (SELECT order_num
+					                  FROM orderitems
+					                  WHERE prod_id = 'RGAN01'));
+                                      
+SELECT COUNT(*) AS orders
+FROM orders
+WHERE cust_id = '1000000001';
+
+#统计每个顾客的订单数目
+SELECT cust_name, cust_state, 
+       (SELECT COUNT(*)
+        FROM orders
+        WHERE orders.cust_id = customers.cust_id) AS orders
+FROM customers
+ORDER BY cust_name;
+
+#联结：在一条SELECT语句中关联多个表alter
+SELECT vend_name, prod_name, prod_price
+FROM vendors, products
+WHERE vendors.vend_id = products.vend_id;
+
+#输出笛卡尔积的数目
+SELECT vend_name, prod_name, prod_price
+FROM vendors, products;
+
+#内联结
+SELECT vend_name, prod_name, prod_price
+FROM vendors INNER JOIN products
+ON vendors.vend_id = products.vend_id;
+
+#联结多个表
+SELECT prod_name, vend_name, prod_price, quantity
+FROM orderitems, products, vendors
+WHERE products.vend_id = vendors.vend_id
+AND orderitems.prod_id = products.prod_id
+AND order_num = 20007;
+
+SELECT CONCAT(vend_name, '(', vend_country, ')') AS vend_title
+FROM vendors
+ORDER BY vend_name;
+
+#给表起别名
+SELECT cust_name, cust_contact
+FROM customers AS C, orders AS O, orderitems AS OI
+WHERE C.cust_id = O.cust_id
+AND OI.order_item = O.order_num
+AND prod_id = 'RGAN01';
+
+#外联结：联结包含了那些在相关表中没有关联行的行
+SELECT customers.cust_id, orders.order_num
+FROM customers LEFT OUTER JOIN orders #LEFT指定其包括所有行的表为左边的表
+ON customers.cust_id = orders.cust_id;
+
+SELECT customers.cust_id, orders.order_num
+FROM customers RIGHT OUTER JOIN orders 
+ON customers.cust_id = orders.cust_id;
+
+SELECT customers.cust_id, COUNT(orders.order_num) AS num_ord
+FROM customers INNER JOIN orders
+ON customers.cust_id = orders.cust_id
+GROUP BY customers.cust_id; 
+
+SELECT customers.cust_id, COUNT(orders.order_num) AS num_ord
+FROM customers LEFT OUTER JOIN orders #LEFT指定其包括所有行的表为左边的表
+ON customers.cust_id = orders.cust_id
+GROUP BY customers.cust_id; #必须分组后再使用COUNT
+
+#组合查询
+SELECT cust_name, cust_contact, cust_email
+FROM customers
+WHERE cust_state IN ('IL','IN','MI')
+UNION
+SELECT cust_name, cust_contact, cust_email
+FROM customers
+WHERE cust_name = 'Fun4All';
+
+SELECT cust_name, cust_contact, cust_email
+FROM customers
+WHERE cust_state IN ('IL','IN','MI')
+OR cust_name = 'Fun4All';
+
+SELECT cust_name, cust_contact, cust_email
+FROM customers
+WHERE cust_state IN ('IL','IN','MI')
+UNION ALL #不取消重复的行
+SELECT cust_name, cust_contact, cust_email
+FROM customers
+WHERE cust_name = 'Fun4All';
+
+SELECT cust_name, cust_contact, cust_email
+FROM customers
+WHERE cust_state IN ('IL','IN','MI')
+UNION
+SELECT cust_name, cust_contact, cust_email
+FROM customers
+WHERE cust_name = 'Fun4All'
+ORDER BY cust_name, cust_contact;
+
+
+
+
